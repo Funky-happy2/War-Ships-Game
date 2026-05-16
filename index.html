@@ -14,9 +14,29 @@
       <span class="brand-tag">mini war · land · sea · air</span>
     </div>
     <div class="topbar-right">
+      <span id="account-widget" class="account-widget hidden">
+        <span class="account-label">callsign</span>
+        <span id="account-name" class="account-name">—</span>
+        <button id="btn-logout" class="link">logout</button>
+      </span>
       <span id="scene-label" class="scene-label">command room</span>
     </div>
   </header>
+
+  <!-- ===== AUTH ===== -->
+  <main id="auth" class="auth-screen hidden">
+    <div class="auth-card">
+      <h2 class="auth-title">SALVO · COMMAND ACCESS</h2>
+      <p class="auth-sub">enter callsign and password — unknown callsigns are auto-registered</p>
+      <div class="auth-form">
+        <input id="auth-username" placeholder="callsign" autocomplete="username" />
+        <input id="auth-password" type="password" placeholder="password" autocomplete="current-password" />
+        <button id="auth-submit" class="primary">enter command</button>
+      </div>
+      <p id="auth-message" class="auth-message"></p>
+      <p class="auth-disclaimer">⚠ local-only profiles · stored in this browser's localStorage · NOT secure against anyone with dev tools — don't reuse a real password</p>
+    </div>
+  </main>
 
   <!-- ===== LOBBY ===== -->
   <main id="lobby" class="lobby">
@@ -110,20 +130,72 @@
           </ul>
         </div>
         <div class="hint-block">
-          <h3>commander abilities</h3>
+          <h3>abilities &amp; buildings</h3>
           <ul>
-            <li><b>Q</b> airstrike (target area · 35 aoe dmg)</li>
-            <li><b>E</b> reinforce (+2 infantry at HQ instant)</li>
-            <li><b>R</b> recon ping (reveal area 8s)</li>
-            <li>hold <b>4 of 6</b> points for <b>20s</b> to win</li>
+            <li><b>Q</b> airstrike · <b>E</b> reinforce · <b>R</b> recon</li>
+            <li><b>B</b> barracks · <b>Y</b> shipyard · <b>A</b> airbase · <b>S</b> depot</li>
+            <li>buildings shoot, take damage, and auto-produce units</li>
+            <li>hold <b>ALL 8 islands</b> for <b>4s</b> — gold ★ = MAJOR (2× supply)</li>
           </ul>
         </div>
       </div>
 
+      <div class="mp-section">
+        <h3 class="mp-title">MULTIPLAYER</h3>
+        <p class="mp-sub">play a friend via session code · peer-to-peer · no server needed</p>
+        <div class="mp-actions">
+          <button id="btn-host" class="seg-btn">host match</button>
+          <button id="btn-join" class="seg-btn">join match</button>
+        </div>
+        <div id="mp-panel" class="mp-panel hidden">
+          <div id="mp-status" class="mp-status">…</div>
+          <div id="mp-code-row" class="mp-code-row hidden">
+            <input id="mp-code-input" placeholder="ABC123" maxlength="6" />
+            <button id="mp-code-submit" class="seg-btn active">connect</button>
+          </div>
+          <button id="mp-cancel" class="link">cancel</button>
+        </div>
+      </div>
+
       <div class="lobby-actions">
-        <button id="btn-tutorial" class="secondary">tutorial · no enemy</button>
+        <button id="btn-tutorial" class="secondary">tutorial</button>
+        <button id="btn-shop" class="secondary">shop · <span id="lobby-credits-display">0 cr</span></button>
         <button id="btn-start" class="primary">deploy to battle</button>
       </div>
+    </div>
+  </main>
+
+  <!-- ===== SHOP ===== -->
+  <main id="shop" class="shop hidden">
+    <div class="shop-card">
+      <div class="shop-header">
+        <div>
+          <h2 class="shop-title">quartermaster</h2>
+          <p class="shop-sub">spend campaign credits earned in battle</p>
+        </div>
+        <div class="shop-toolbar">
+          <div class="credits-badge">credits <b id="shop-credits">0</b></div>
+          <button id="btn-shop-back" class="secondary small">command room</button>
+        </div>
+      </div>
+
+      <section class="shop-section">
+        <h3 class="shop-section-title">SKINS</h3>
+        <p class="shop-section-sub">team-color outfit for all your units · cosmetic only</p>
+        <div class="shop-grid" id="skin-grid"></div>
+      </section>
+
+      <section class="shop-section">
+        <h3 class="shop-section-title">UPGRADES</h3>
+        <p class="shop-section-sub">permanent boosts applied to every match</p>
+        <div class="shop-grid" id="upgrade-list"></div>
+      </section>
+
+      <section class="shop-section">
+        <h3 class="shop-section-title">UNIT UNLOCKS</h3>
+        <p class="shop-section-sub">specialized troops you can deploy once unlocked</p>
+        <div class="shop-grid" id="unlock-list"></div>
+      </section>
     </div>
   </main>
 
@@ -133,19 +205,19 @@
       <canvas id="game" width="1100" height="700"></canvas>
 
       <div class="hud hud-top">
-        <div class="score-readout score-blue">
-          <div class="score-label">BLUE</div>
-          <div class="score-points" id="score-blue">0 / 6</div>
-          <div class="hold-bar"><div id="hold-blue" class="hold-fill"></div></div>
+        <div class="score-readout score-me">
+          <div class="score-label">YOU</div>
+          <div class="score-points" id="score-me">0 / 8</div>
+          <div class="hold-bar"><div id="hold-me" class="hold-fill"></div></div>
         </div>
         <div class="match-clock">
           <span class="hud-tiny">battle clock</span>
           <span id="match-time">0:00</span>
         </div>
-        <div class="score-readout score-red">
-          <div class="score-label">RED</div>
-          <div class="score-points" id="score-red">0 / 6</div>
-          <div class="hold-bar"><div id="hold-red" class="hold-fill"></div></div>
+        <div class="score-readout score-foe">
+          <div class="score-label">ENEMY</div>
+          <div class="score-points" id="score-foe">0 / 8</div>
+          <div class="hold-bar"><div id="hold-foe" class="hold-fill"></div></div>
         </div>
       </div>
 
@@ -183,6 +255,10 @@
           <div class="hud-tiny">selection</div>
           <div id="selection-info" class="selection-info">none</div>
         </div>
+        <div class="build-card">
+          <div class="hud-tiny">construct</div>
+          <div class="build-list" id="build-list"><!-- populated by game.js --></div>
+        </div>
       </div>
 
       <div id="targeting-banner" class="targeting-banner hidden">
@@ -207,6 +283,7 @@
     <span>v0.3 · single map vs bot · short mode · skins/upgrades/ranked = coming layers</span>
   </footer>
 
+  <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
   <script src="game.js"></script>
 </body>
 </html>
