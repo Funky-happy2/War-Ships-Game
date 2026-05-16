@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SALVO — Mini War</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <span class="brand-mark">⚔</span>
+      <span class="brand-name">SALVO</span>
+      <span class="brand-tag">mini war · land · sea · air</span>
+    </div>
+    <div class="topbar-right">
+      <span id="scene-label" class="scene-label">command room</span>
+    </div>
+  </header>
+
+  <!-- ===== LOBBY ===== -->
+  <main id="lobby" class="lobby">
+    <div class="lobby-card">
+      <h2 class="lobby-title">command room</h2>
+      <p class="lobby-sub">deploy troops, hold territory, sink the enemy command</p>
+
+      <div class="setup-grid">
+        <div class="setup-block">
+          <div class="setup-label">match length</div>
+          <div class="seg">
+            <button class="seg-btn active" data-length="short">short · ~8 min</button>
+            <button class="seg-btn" data-length="long" disabled>long · ~25 min · soon</button>
+          </div>
+        </div>
+
+        <div class="setup-block">
+          <div class="setup-label">queue</div>
+          <div class="seg">
+            <button class="seg-btn active" data-rank="normal">normal</button>
+            <button class="seg-btn" data-rank="ranked" disabled>ranked · unlock at lvl 5</button>
+          </div>
+        </div>
+
+        <div class="setup-block">
+          <div class="setup-label">bot difficulty</div>
+          <div class="seg">
+            <button class="seg-btn" data-diff="easy">easy</button>
+            <button class="seg-btn active" data-diff="normal">normal</button>
+            <button class="seg-btn" data-diff="hard">hard</button>
+          </div>
+        </div>
+
+        <div class="setup-block">
+          <div class="setup-label">team</div>
+          <div class="seg">
+            <button class="seg-btn active" data-team="solo">solo vs bot</button>
+            <button class="seg-btn" data-team="party" disabled>party · soon</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="fleets">
+        <div class="fleet fleet-blue">
+          <div class="fleet-head"><span class="fleet-tag">blue command</span><span class="fleet-count">1 / 5</span></div>
+          <div class="ship-slot filled" data-team="blue">
+            <div class="slot-portrait">★</div>
+            <div class="slot-meta">
+              <div class="slot-name">YOU · commander</div>
+              <div class="role-chips">
+                <span class="chip">⚓ Intel</span>
+                <span class="chip">⊕ Fire support</span>
+                <span class="chip">🔧 Logistics</span>
+                <span class="chip">⌖ Maneuver</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="versus">VS</div>
+        <div class="fleet fleet-red">
+          <div class="fleet-head"><span class="fleet-tag">red command</span><span class="fleet-count">1 / 5</span></div>
+          <div class="ship-slot filled bot" data-team="red">
+            <div class="slot-portrait">🤖</div>
+            <div class="slot-meta">
+              <div class="slot-name">BOT · novice</div>
+              <div class="role-chips">
+                <span class="chip">all roles</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="controls-hint">
+        <div class="hint-block">
+          <h3>commanding troops</h3>
+          <ul>
+            <li><b>Left click</b> a unit to select · <b>Shift+click</b> to add</li>
+            <li><b>Right click</b> on map to order move/attack</li>
+            <li><b>Tab</b> select all · <b>Space</b> pause</li>
+            <li>deployed units auto-march to the nearest target</li>
+          </ul>
+        </div>
+        <div class="hint-block">
+          <h3>deploy hotkeys</h3>
+          <ul>
+            <li><b>1</b> infantry · <b>2</b> sniper · <b>3</b> tank — <i>land</i></li>
+            <li><b>4</b> gunboat · <b>5</b> destroyer — <i>sea</i></li>
+            <li><b>6</b> fighter · <b>7</b> bomber — <i>air (captures any)</i></li>
+            <li>each unit type has different cost &amp; role</li>
+          </ul>
+        </div>
+        <div class="hint-block">
+          <h3>commander abilities</h3>
+          <ul>
+            <li><b>Q</b> airstrike (target area · 35 aoe dmg)</li>
+            <li><b>E</b> reinforce (+2 infantry at HQ instant)</li>
+            <li><b>R</b> recon ping (reveal area 8s)</li>
+            <li>hold <b>4 of 6</b> points for <b>20s</b> to win</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="lobby-actions">
+        <button id="btn-tutorial" class="secondary">tutorial · no enemy</button>
+        <button id="btn-start" class="primary">deploy to battle</button>
+      </div>
+    </div>
+  </main>
+
+  <!-- ===== BATTLE ===== -->
+  <main id="match" class="match hidden">
+    <div class="arena-wrap">
+      <canvas id="game" width="1100" height="700"></canvas>
+
+      <div class="hud hud-top">
+        <div class="score-readout score-blue">
+          <div class="score-label">BLUE</div>
+          <div class="score-points" id="score-blue">0 / 6</div>
+          <div class="hold-bar"><div id="hold-blue" class="hold-fill"></div></div>
+        </div>
+        <div class="match-clock">
+          <span class="hud-tiny">battle clock</span>
+          <span id="match-time">0:00</span>
+        </div>
+        <div class="score-readout score-red">
+          <div class="score-label">RED</div>
+          <div class="score-points" id="score-red">0 / 6</div>
+          <div class="hold-bar"><div id="hold-red" class="hold-fill"></div></div>
+        </div>
+      </div>
+
+      <div class="hud hud-left">
+        <div class="resource-card">
+          <div class="hud-tiny">supply</div>
+          <div id="resource-val" class="resource-val">100</div>
+          <div class="hud-tiny dim" id="resource-rate">+1.0 / sec</div>
+        </div>
+        <div class="deploy-list" id="deploy-list">
+          <!-- populated by game.js from UNIT_TYPES -->
+        </div>
+      </div>
+
+      <div class="hud hud-bottom">
+        <div class="ability" id="ability-airstrike">
+          <div class="ability-key">Q</div>
+          <div class="ability-name">AIRSTRIKE</div>
+          <div class="ability-cd"><div class="ability-cd-fill"></div></div>
+        </div>
+        <div class="ability" id="ability-reinforce">
+          <div class="ability-key">E</div>
+          <div class="ability-name">REINFORCE</div>
+          <div class="ability-cd"><div class="ability-cd-fill"></div></div>
+        </div>
+        <div class="ability" id="ability-recon">
+          <div class="ability-key">R</div>
+          <div class="ability-name">RECON</div>
+          <div class="ability-cd"><div class="ability-cd-fill"></div></div>
+        </div>
+      </div>
+
+      <div class="hud hud-right">
+        <div class="selection-card">
+          <div class="hud-tiny">selection</div>
+          <div id="selection-info" class="selection-info">none</div>
+        </div>
+      </div>
+
+      <div id="targeting-banner" class="targeting-banner hidden">
+        <span id="targeting-text">click target</span>
+        <span class="targeting-hint">esc to cancel</span>
+      </div>
+
+      <div id="tutorial-panel" class="tutorial-panel hidden">
+        <div class="tutorial-head">
+          <span class="tutorial-tag">TUTORIAL</span>
+          <span class="tutorial-progress" id="tutorial-progress">0 / 5</span>
+        </div>
+        <ul class="tutorial-steps" id="tutorial-steps"></ul>
+        <p class="tutorial-hint" id="tutorial-hint">complete all steps to finish</p>
+      </div>
+
+      <button id="btn-leave" class="btn-leave">leave battle</button>
+    </div>
+  </main>
+
+  <footer class="footer">
+    <span>v0.3 · single map vs bot · short mode · skins/upgrades/ranked = coming layers</span>
+  </footer>
+
+  <script src="game.js"></script>
+</body>
+</html>
