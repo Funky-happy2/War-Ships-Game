@@ -29,10 +29,14 @@ const UNIT_TYPES = {
   infantry:  { cost: 50,  hp: 60,  atk: 10, speed: 55, vision: 170, range: 32,  atkCd: 1.1, canCapture: ['land'],             icon: 'I', label: 'INFANTRY',  role: 'cheap line trooper' },
   sniper:    { cost: 75,  hp: 40,  atk: 18, speed: 50, vision: 250, range: 90,  atkCd: 2.5, canCapture: ['land'],             icon: 'S', label: 'SNIPER',    role: 'long-range, fragile' },
   tank:      { cost: 110, hp: 170, atk: 22, speed: 35, vision: 160, range: 40,  atkCd: 1.6, canCapture: ['land'],             icon: 'T', label: 'TANK',      role: 'tough land bruiser' },
+  recon:     { cost: 60,  hp: 35,  atk: 6,  speed: 85, vision: 280, range: 20,  atkCd: 1.4, canCapture: ['land'],             icon: 'R', label: 'RECON',    role: 'scout, high vision', locked: true, unlockCost: 250 },
   gunboat:   { cost: 80,  hp: 100, atk: 16, speed: 42, vision: 200, range: 50,  atkCd: 1.6, canCapture: ['sea'],              icon: 'G', label: 'GUNBOAT',   role: 'basic sea fighter' },
   destroyer: { cost: 140, hp: 160, atk: 26, speed: 38, vision: 220, range: 65,  atkCd: 1.8, canCapture: ['sea'],              icon: 'D', label: 'DESTROYER', role: 'heavy long-range sea' },
+  corvette:  { cost: 95,  hp: 80,  atk: 14, speed: 60, vision: 210, range: 45,  atkCd: 1.4, canCapture: ['sea'],              icon: 'C', label: 'CORVETTE',  role: 'fast nimble sea', locked: true, unlockCost: 280 },
+  missile:   { cost: 150, hp: 90,  atk: 35, speed: 25, vision: 240, range: 120, atkCd: 3.2, canCapture: ['sea'],              icon: 'M', label: 'MISSILE',   role: 'extreme range, slow', locked: true, unlockCost: 400 },
   fighter:   { cost: 120, hp: 50,  atk: 24, speed: 92, vision: 240, range: 38,  atkCd: 1.0, canCapture: ['land','sea','air'], icon: 'F', label: 'FIGHTER',   role: 'fast, captures any terrain' },
   bomber:    { cost: 180, hp: 70,  atk: 40, speed: 72, vision: 220, range: 55,  atkCd: 2.5, canCapture: ['land','sea','air'], icon: 'B', label: 'BOMBER',    role: 'huge alpha damage' },
+  interceptor: { cost: 130, hp: 55, atk: 28, speed: 100, vision: 260, range: 35, atkCd: 0.9, canCapture: ['land','sea','air'], icon: 'X', label: 'INTERCEPTOR', role: 'fastest unit', locked: true, unlockCost: 380 },
   artillery: { cost: 160, hp: 75,  atk: 30, speed: 28, vision: 230, range: 110, atkCd: 2.8, canCapture: ['land'],             icon: 'A', label: 'ARTILLERY', role: 'longest range, slow', locked: true, unlockCost: 300 },
   submarine: { cost: 130, hp: 60,  atk: 32, speed: 55, vision: 200, range: 32,  atkCd: 1.4, canCapture: ['sea'],              icon: 'U', label: 'SUBMARINE', role: 'fast melee sea',     locked: true, unlockCost: 350 },
 };
@@ -103,8 +107,8 @@ const DIFFICULTY = {
 };
 const BOT_DEPLOY_WEIGHTS = {
   easy:   { infantry: 70, gunboat: 25, sniper: 5 },
-  normal: { infantry: 20, sniper: 12, tank: 11, gunboat: 14, destroyer: 9, fighter: 14, bomber: 10, artillery: 5, submarine: 5 },
-  hard:   { infantry: 12, sniper: 16, tank: 14, gunboat: 11, destroyer: 12, fighter: 12, bomber: 10, artillery: 7, submarine: 6 },
+  normal: { infantry: 18, recon: 6, sniper: 10, tank: 10, gunboat: 12, corvette: 8, destroyer: 8, fighter: 12, bomber: 9, interceptor: 4, artillery: 4, submarine: 4 },
+  hard:   { infantry: 10, recon: 8, sniper: 14, tank: 12, gunboat: 10, corvette: 10, destroyer: 10, fighter: 11, bomber: 9, interceptor: 6, artillery: 6, submarine: 5, missile: 3 },
 };
 let botDifficulty = 'normal';
 
@@ -1194,14 +1198,25 @@ function drawUnit(ctx, u) {
       ctx.lineTo(u.x, u.y + 12); ctx.lineTo(u.x - 10, u.y);
       ctx.closePath(); break;
     case 'tank': ctx.rect(u.x - 12, u.y - 12, 24, 24); break;
+    case 'recon': ctx.arc(u.x, u.y, 9, 0, Math.PI * 2); break;
     case 'gunboat':   roundRectPath(ctx, u.x - 13, u.y - 8, 26, 16, 4); break;
     case 'destroyer': roundRectPath(ctx, u.x - 16, u.y - 9, 32, 18, 4); break;
+    case 'corvette':  roundRectPath(ctx, u.x - 12, u.y - 7, 24, 14, 3); break;
+    case 'missile':
+      ctx.moveTo(u.x, u.y - 14); ctx.lineTo(u.x + 8, u.y + 8);
+      ctx.lineTo(u.x, u.y + 6); ctx.lineTo(u.x - 8, u.y + 8);
+      ctx.closePath(); break;
     case 'fighter':
       ctx.moveTo(u.x, u.y - 13); ctx.lineTo(u.x + 12, u.y + 10);
       ctx.lineTo(u.x - 12, u.y + 10); ctx.closePath(); break;
     case 'bomber':
       ctx.moveTo(u.x, u.y - 15); ctx.lineTo(u.x + 15, u.y + 12);
       ctx.lineTo(u.x - 15, u.y + 12); ctx.closePath(); break;
+    case 'interceptor':
+      ctx.moveTo(u.x, u.y - 14); ctx.lineTo(u.x + 10, u.y + 8);
+      ctx.lineTo(u.x + 4, u.y + 4); ctx.lineTo(u.x, u.y + 6);
+      ctx.lineTo(u.x - 4, u.y + 4); ctx.lineTo(u.x - 10, u.y + 8);
+      ctx.closePath(); break;
     case 'artillery':
       ctx.moveTo(u.x - 8, u.y - 10); ctx.lineTo(u.x + 8, u.y - 10);
       ctx.lineTo(u.x + 13, u.y); ctx.lineTo(u.x + 8, u.y + 10);
