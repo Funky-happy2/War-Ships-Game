@@ -150,6 +150,8 @@ let paused = false;
 let ability = { active: null };
 const keys = Object.create(null);
 const mouse = { x: 0, y: 0 };
+let camera = { x: 0, y: 0, zoom: 1.0 };
+let cameraInputStart = null;
 let botDecisionTimer = 0;
 let botAbilityTimer = 5;
 let botBuildTimer = 8;
@@ -328,6 +330,8 @@ function resetMatchState() {
   botDecisionTimer = 1; botAbilityTimer = 8; botBuildTimer = 10;
   regenTimer = 0;
   mp.syncTimer = 0;
+  camera = { x: 0, y: 0, zoom: 1.0 };
+  cameraInputStart = null;
 }
 
 function startMatch() {
@@ -964,6 +968,10 @@ function render() {
   const ctx = canvas.getContext('2d');
   ctx.clearRect(0, 0, MAP_W, MAP_H);
 
+  ctx.save();
+  ctx.scale(camera.zoom, camera.zoom);
+  ctx.translate(-camera.x, -camera.y);
+
   drawTerrain(ctx);
   drawStrategicPoints(ctx);
 
@@ -989,6 +997,8 @@ function render() {
     drawSelection(ctx, u);
   }
   if (ability.active) drawAbilityCursor(ctx);
+
+  ctx.restore();
 
   if (paused) {
     ctx.fillStyle = 'rgba(5, 11, 19, 0.55)';
@@ -1429,9 +1439,11 @@ function hideTargeting() {
 function canvasToWorld(e) {
   const canvas = document.getElementById('game');
   const rect = canvas.getBoundingClientRect();
+  const screenX = (e.clientX - rect.left) * (MAP_W / rect.width);
+  const screenY = (e.clientY - rect.top) * (MAP_H / rect.height);
   return {
-    x: (e.clientX - rect.left) * (MAP_W / rect.width),
-    y: (e.clientY - rect.top)  * (MAP_H / rect.height),
+    x: (screenX / camera.zoom) + camera.x,
+    y: (screenY / camera.zoom) + camera.y,
   };
 }
 function hitUnit(pt) {
@@ -1826,16 +1838,32 @@ function handleMpData(data) {
 // ===== Setup =====
 function setupInputs() {
   const canvas = document.getElementById('game');
-  canvas.addEventListener('mousemove', e => {
-    const pt = canvasToWorld(e);
-    mouse.x = pt.x; mouse.y = pt.y;
-  });
   canvas.addEventListener('mousedown', e => {
+    if (e.button === 1) {
+      e.preventDefault();
+      cameraInputStart = { screenX: e.clientX, screenY: e.clientY, cameraX: camera.x, cameraY: camera.y };
+      return;
+    }
     if (scene !== 'match' || matchEnded) return;
     const pt = canvasToWorld(e);
     if (e.button === 0) handleLeftClick(pt, e.shiftKey);
     else if (e.button === 2) handleRightClick(pt);
     e.preventDefault();
+  });
+  canvas.addEventListener('mousemove', e => {
+    const pt = canvasToWorld(e);
+    mouse.x = pt.x; mouse.y = pt.y;
+    if (cameraInputStart) {
+      const deltaX = e.clientX - cameraInputStart.screenX;
+      const deltaY = e.clientY - cameraInputStart.screenY;
+      camera.x = cameraInputStart.cameraX - (deltaX / camera.zoom);
+      camera.y = cameraInputStart.cameraY - (deltaY / camera.zoom);
+      camera.x = Math.max(0, Math.min(camera.x, MAP_W - 1100 / camera.zoom));
+      camera.y = Math.max(0, Math.min(camera.y, MAP_H - 700 / camera.zoom));
+    }
+  });
+  window.addEventListener('mouseup', e => {
+    if (e.button === 1) cameraInputStart = null;
   });
   canvas.addEventListener('contextmenu', e => e.preventDefault());
 
