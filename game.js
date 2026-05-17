@@ -29,7 +29,7 @@ const UNIT_TYPES = {
   infantry:  { cost: 50,  hp: 60,  atk: 10, speed: 55, vision: 170, range: 32,  atkCd: 1.1, canCapture: ['land'],             icon: 'I', label: 'INFANTRY',  role: 'cheap line trooper' },
   sniper:    { cost: 75,  hp: 40,  atk: 18, speed: 50, vision: 250, range: 90,  atkCd: 2.5, canCapture: ['land'],             icon: 'S', label: 'SNIPER',    role: 'long-range, fragile' },
   tank:      { cost: 110, hp: 170, atk: 22, speed: 35, vision: 160, range: 40,  atkCd: 1.6, canCapture: ['land'],             icon: 'T', label: 'TANK',      role: 'tough land bruiser' },
-  recon:     { cost: 60,  hp: 35,  atk: 6,  speed: 85, vision: 280, range: 20,  atkCd: 1.4, canCapture: ['land'],             icon: 'R', label: 'RECON',    role: 'scout, high vision', locked: true, unlockCost: 250 },
+  recon:     { cost: 60,  hp: 35,  atk: 6,  speed: 85, vision: 280, range: 20,  atkCd: 1.4, canCapture: ['land'],             icon: 'R', label: 'RECON',    role: 'scout, high vision' },
   gunboat:   { cost: 80,  hp: 100, atk: 16, speed: 42, vision: 200, range: 50,  atkCd: 1.6, canCapture: ['sea'],              icon: 'G', label: 'GUNBOAT',   role: 'basic sea fighter' },
   destroyer: { cost: 140, hp: 160, atk: 26, speed: 38, vision: 220, range: 65,  atkCd: 1.8, canCapture: ['sea'],              icon: 'D', label: 'DESTROYER', role: 'heavy long-range sea' },
   corvette:  { cost: 95,  hp: 80,  atk: 14, speed: 60, vision: 210, range: 45,  atkCd: 1.4, canCapture: ['sea'],              icon: 'C', label: 'CORVETTE',  role: 'fast nimble sea', locked: true, unlockCost: 280 },
