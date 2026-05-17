@@ -68,6 +68,8 @@ const SKINS = {
   forest:  { name: 'Forest',  cost: 250, primary: '#4ade80', halo: 'rgba(74, 222, 128, 0.22)' },
   ember:   { name: 'Ember',   cost: 300, primary: '#fb923c', halo: 'rgba(251, 146, 60, 0.22)' },
   steel:   { name: 'Steel',   cost: 350, primary: '#a8a29e', halo: 'rgba(168, 162, 158, 0.22)' },
+  crimson: { name: 'Crimson', cost: 400, primary: '#dc2626', halo: 'rgba(220, 38, 38, 0.22)' },
+  ocean:   { name: 'Ocean',   cost: 450, primary: '#06b6d4', halo: 'rgba(6, 182, 212, 0.22)' },
 };
 
 const UPGRADES = {
@@ -76,12 +78,14 @@ const UPGRADES = {
   quartermaster: { name: 'Quartermaster',     cost: 300, desc: '+0.5 base supply / sec' },
   medics:        { name: 'Field Medics',      cost: 400, desc: 'units regenerate 1 hp / sec' },
   engineers:     { name: 'Engineering Corps', cost: 350, desc: 'buildings construct 30% faster' },
+  armor:         { name: 'Reinforced Armor',  cost: 450, desc: 'all units +15% max HP' },
+  radar:         { name: 'Advanced Radar',    cost: 500, desc: 'all units +20% vision range' },
 };
 
 // 3 land · 2 air · 3 sea · 2 are MAJOR (worth 2× supply, 15s capture, gold star)
 const STRAT_POINTS = [
   { id: 'west-town',   x: 140, y: 480, type: 'land', name: 'West Town' },
-  { id: 'forest',      x: 290, y: 210, type: 'land', name: 'Forest' },
+  { id: 'forest',      x: 290, y: 210, type: 'land', name: 'Forest', major: true },
   { id: 'east-hills',  x: 940, y: 260, type: 'land', name: 'East Hills', major: true },
   { id: 'air-base',    x: 560, y: 130, type: 'air',  name: 'Air Base' },
   { id: 'sky-station', x: 840, y: 70,  type: 'air',  name: 'Sky Station' },
@@ -465,8 +469,13 @@ function autoRallyUnit(u) {
     const d = dist(u, p);
     if (d < bd) { bd = d; best = p; }
   }
-  if (!best) best = STRAT_POINTS.find(p => p.id === 'bridge');
-  if (best) u.target = { kind: 'point', pointId: best.id };
+  if (!best) {
+    const enemy = enemyTeam(u.team);
+    const enemyHq = enemy === 'blue' ? HQ_BLUE : HQ_RED;
+    u.target = { kind: 'pos', x: enemyHq.x + (Math.random() - 0.5) * 100, y: enemyHq.y + (Math.random() - 0.5) * 100 };
+  } else {
+    u.target = { kind: 'point', pointId: best.id };
+  }
 }
 
 function unitById(id) { return units.find(u => u.id === id); }
