@@ -32,8 +32,9 @@ const UNIT_TYPES = {
   recon:     { cost: 60,  hp: 35,  atk: 6,  speed: 85, vision: 280, range: 20,  atkCd: 1.4, canCapture: ['land'],             icon: 'R', label: 'RECON',    role: 'scout, high vision' },
   gunboat:   { cost: 80,  hp: 100, atk: 16, speed: 42, vision: 200, range: 50,  atkCd: 1.6, canCapture: ['sea'],              icon: 'G', label: 'GUNBOAT',   role: 'basic sea fighter' },
   destroyer: { cost: 140, hp: 160, atk: 26, speed: 38, vision: 220, range: 65,  atkCd: 1.8, canCapture: ['sea'],              icon: 'D', label: 'DESTROYER', role: 'heavy long-range sea' },
-  corvette:  { cost: 95,  hp: 80,  atk: 14, speed: 60, vision: 210, range: 45,  atkCd: 1.4, canCapture: ['sea'],              icon: 'C', label: 'CORVETTE',  role: 'fast nimble sea', locked: true, unlockCost: 280 },
+  corvette:  { cost: 95,  hp: 80,  atk: 14, speed: 60, vision: 210, range: 45,  atkCd: 1.4, canCapture: ['sea'],              icon: 'C', label: 'CORVETTE',  role: 'fast nimble sea' },
   missile:   { cost: 150, hp: 90,  atk: 35, speed: 25, vision: 240, range: 120, atkCd: 3.2, canCapture: ['sea'],              icon: 'M', label: 'MISSILE',   role: 'extreme range, slow', locked: true, unlockCost: 400 },
+  transport: { cost: 120, hp: 110, atk: 8,  speed: 48, vision: 200, range: 30,  atkCd: 1.8, canCapture: ['sea','land'],       icon: 'T', label: 'TRANSPORT', role: 'carries land units · sea+land', locked: true, unlockCost: 450 },
   fighter:   { cost: 120, hp: 50,  atk: 24, speed: 92, vision: 240, range: 38,  atkCd: 1.0, canCapture: ['land','sea','air'], icon: 'F', label: 'FIGHTER',   role: 'fast, captures any terrain' },
   bomber:    { cost: 180, hp: 70,  atk: 40, speed: 72, vision: 220, range: 55,  atkCd: 2.5, canCapture: ['land','sea','air'], icon: 'B', label: 'BOMBER',    role: 'huge alpha damage' },
   interceptor: { cost: 130, hp: 55, atk: 28, speed: 100, vision: 260, range: 35, atkCd: 0.9, canCapture: ['land','sea','air'], icon: 'X', label: 'INTERCEPTOR', role: 'fastest unit', locked: true, unlockCost: 380 },
@@ -107,8 +108,8 @@ const DIFFICULTY = {
 };
 const BOT_DEPLOY_WEIGHTS = {
   easy:   { infantry: 70, gunboat: 25, sniper: 5 },
-  normal: { infantry: 18, recon: 6, sniper: 10, tank: 10, gunboat: 12, corvette: 8, destroyer: 8, fighter: 12, bomber: 9, interceptor: 4, artillery: 4, submarine: 4 },
-  hard:   { infantry: 10, recon: 8, sniper: 14, tank: 12, gunboat: 10, corvette: 10, destroyer: 10, fighter: 11, bomber: 9, interceptor: 6, artillery: 6, submarine: 5, missile: 3 },
+  normal: { infantry: 16, recon: 5, sniper: 9, tank: 9, gunboat: 11, corvette: 7, destroyer: 7, transport: 4, fighter: 11, bomber: 9, interceptor: 3, artillery: 3, submarine: 3 },
+  hard:   { infantry: 9, recon: 7, sniper: 12, tank: 11, gunboat: 9, corvette: 9, destroyer: 9, transport: 5, fighter: 10, bomber: 8, interceptor: 5, artillery: 5, submarine: 4, missile: 2 },
 };
 let botDifficulty = 'normal';
 
@@ -1202,6 +1203,7 @@ function drawUnit(ctx, u) {
     case 'gunboat':   roundRectPath(ctx, u.x - 13, u.y - 8, 26, 16, 4); break;
     case 'destroyer': roundRectPath(ctx, u.x - 16, u.y - 9, 32, 18, 4); break;
     case 'corvette':  roundRectPath(ctx, u.x - 12, u.y - 7, 24, 14, 3); break;
+    case 'transport': roundRectPath(ctx, u.x - 16, u.y - 10, 32, 20, 4); break;
     case 'missile':
       ctx.moveTo(u.x, u.y - 14); ctx.lineTo(u.x + 8, u.y + 8);
       ctx.lineTo(u.x, u.y + 6); ctx.lineTo(u.x - 8, u.y + 8);
